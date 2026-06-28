@@ -61,15 +61,19 @@ def ensure_model_available():
             raise RuntimeError("huggingface_hub is required to download the model from Hugging Face Hub.")
 
         os.makedirs("models", exist_ok=True)
-        st.write("Local model files were not found. Downloading from Hugging Face Hub...")
+        status_placeholder = st.empty()
+        status_placeholder.info("Local model files were not found. Downloading from Hugging Face Hub...")
         try:
-            return snapshot_download(
+            downloaded_path = snapshot_download(
                 repo_id=MODEL_REPO_ID,
                 revision=MODEL_REVISION,
                 local_dir=MODEL_PATH,
                 local_dir_use_symlinks=False,
             )
+            status_placeholder.success("Model loaded successfully from Hugging Face Hub.")
+            return downloaded_path
         except Exception as exc:
+            status_placeholder.error(f"Could not download model from Hugging Face Hub: {exc}")
             raise RuntimeError(
                 f"Could not download model from Hugging Face Hub: {exc}"
             ) from exc
