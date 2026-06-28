@@ -46,12 +46,17 @@ def ensure_model_available():
 
         os.makedirs("models", exist_ok=True)
         st.write("Local model files were not found. Downloading from Hugging Face Hub...")
-        return snapshot_download(
-            repo_id=MODEL_REPO_ID,
-            revision=MODEL_REVISION,
-            local_dir=MODEL_PATH,
-            local_dir_use_symlinks=False,
-        )
+        try:
+            return snapshot_download(
+                repo_id=MODEL_REPO_ID,
+                revision=MODEL_REVISION,
+                local_dir=MODEL_PATH,
+                local_dir_use_symlinks=False,
+            )
+        except Exception as exc:
+            raise RuntimeError(
+                f"Could not download model from Hugging Face Hub: {exc}"
+            ) from exc
 
     raise FileNotFoundError(
         f"Model directory '{MODEL_PATH}' was not found. "
@@ -68,7 +73,12 @@ def load_model():
     return model, tokenizer
 
 
-model, tokenizer = load_model()
+try:
+    model, tokenizer = load_model()
+except Exception as exc:
+    st.error(f"Model initialization failed: {exc}")
+    model = None
+    tokenizer = None
 
 
 @st.cache_data
