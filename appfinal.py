@@ -27,9 +27,25 @@ st.set_page_config(
 # LOAD MODEL (DistilBERT)
 # --------------------------------------------------
 
-MODEL_PATH = os.environ.get("MODEL_PATH", "models/best_model_bert")
-MODEL_REPO_ID = os.environ.get("MODEL_REPO_ID")
-MODEL_REVISION = os.environ.get("MODEL_REVISION", "main")
+def get_setting(name, default=None):
+    value = os.environ.get(name)
+    if value:
+        return value
+
+    try:
+        secret_value = st.secrets.get(name)
+    except Exception:
+        secret_value = None
+
+    if secret_value is not None:
+        return secret_value
+
+    return default
+
+
+MODEL_PATH = get_setting("MODEL_PATH", "models/best_model_bert")
+MODEL_REPO_ID = get_setting("MODEL_REPO_ID")
+MODEL_REVISION = get_setting("MODEL_REVISION", "main")
 
 # Label order matches sklearn LabelEncoder's alphabetical sort of
 # ['negative', 'neutral', 'positive'] used during training.
