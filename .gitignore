@@ -1,0 +1,39 @@
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Jupyter / notebook checkpoints
+.ipynb_checkpoints/
+
+# Environment variables
+.env
+.env.*
+
+# Logs and runtime files
+*.log
+*.out
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Streamlit / local app artifacts
+.streamlit/secrets.toml
+.streamlit/config.toml
+
+# Model and dataset artifacts (optional, if you do not want to push large files)
+# Uncomment if you prefer not to track generated model folders
+models/
+dataset.csv
+
+# Package manager caches
+pip-wheel-metadata/
+.pytest_cache/
+.mypy_cache/

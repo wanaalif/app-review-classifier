@@ -1,0 +1,4 @@
+Configuration,Accuracy,Precision,Recall,F1-Macro,F1-Weighted
+LR  ×  TF-IDF,0.7681,0.613,0.6436,0.6042,0.8032
+LR  ×  Word2Vec,0.7395,0.5944,0.6188,0.5795,0.7819
+DistilBERT,0.8964,0.7492,0.6599,0.6781,0.8846
