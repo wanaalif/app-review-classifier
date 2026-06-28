@@ -1,3 +1,5 @@
+import os
+
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -5,6 +7,11 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 from transformers import DistilBertForSequenceClassification, DistilBertTokenizerFast
+
+try:
+    from huggingface_hub import snapshot_download
+except ImportError:  # pragma: no cover
+    snapshot_download = None
 
 # --------------------------------------------------
 # PAGE CONFIG
@@ -20,17 +27,43 @@ st.set_page_config(
 # LOAD MODEL (DistilBERT)
 # --------------------------------------------------
 
-MODEL_PATH = "models/best_model_bert"
+MODEL_PATH = os.environ.get("MODEL_PATH", "models/best_model_bert")
+MODEL_REPO_ID = os.environ.get("MODEL_REPO_ID")
+MODEL_REVISION = os.environ.get("MODEL_REVISION", "main")
 
 # Label order matches sklearn LabelEncoder's alphabetical sort of
 # ['negative', 'neutral', 'positive'] used during training.
 LABEL_MAP = {0: "Negative", 1: "Neutral", 2: "Positive"}
 
 
+def ensure_model_available():
+    if os.path.isdir(MODEL_PATH) and os.path.exists(os.path.join(MODEL_PATH, "config.json")):
+        return MODEL_PATH
+
+    if MODEL_REPO_ID:
+        if snapshot_download is None:
+            raise RuntimeError("huggingface_hub is required to download the model from Hugging Face Hub.")
+
+        os.makedirs("models", exist_ok=True)
+        st.write("Local model files were not found. Downloading from Hugging Face Hub...")
+        return snapshot_download(
+            repo_id=MODEL_REPO_ID,
+            revision=MODEL_REVISION,
+            local_dir=MODEL_PATH,
+            local_dir_use_symlinks=False,
+        )
+
+    raise FileNotFoundError(
+        f"Model directory '{MODEL_PATH}' was not found. "
+        "Set MODEL_REPO_ID to a public Hugging Face model repo for Streamlit Cloud deployment."
+    )
+
+
 @st.cache_resource
 def load_model():
-    model = DistilBertForSequenceClassification.from_pretrained(MODEL_PATH)
-    tokenizer = DistilBertTokenizerFast.from_pretrained(MODEL_PATH)
+    resolved_model_path = ensure_model_available()
+    model = DistilBertForSequenceClassification.from_pretrained(resolved_model_path)
+    tokenizer = DistilBertTokenizerFast.from_pretrained(resolved_model_path)
     model.eval()
     return model, tokenizer
 
